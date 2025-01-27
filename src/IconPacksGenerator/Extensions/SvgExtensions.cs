@@ -1,6 +1,6 @@
 ﻿using Svg;
 
-namespace IconPacksGenerator;
+namespace IconPacksGenerator.Extensions;
 internal static class SvgExtensions
 {
     internal static string ParseCircle(this SvgElement element)

@@ -1,239 +1,126 @@
-using CliWrap;
-using CliWrap.Buffered;
-using IconPacksGenerator;
-using System.Text;
+using IconPacksGenerator.IconGenerators;
+using IconPacksGenerator.Services;
 
-internal class Program
+namespace IconPacksGenerator;
+
+internal static class Program
 {
-    private static string? apiKey;
+    private static string? _apiKey = string.Empty;
 
-    private static async Task Main(string[] args)
+    private static async Task Main(string?[] args)
     {
         if (args.Length > 0 && !string.IsNullOrEmpty(args[0]))
-            apiKey = args[0];
+        {
+            _apiKey = args[0];
+        }
+
+        FontRepositoryInfo featherFontRepositoryInfo = new FontRepositoryInfo()
+        {
+            WorkPath = Paths.FeatherIconPath,
+            Remote = "https://github.com/feathericons/feather.git",
+            Branch = "main",
+            SparseCheckout = "icons/"
+        };
+
+        FontRepositoryInfo fontAwesomeFontRepositoryInfo = new FontRepositoryInfo()
+        {
+            WorkPath = Paths.FontAwesomeIconPath,
+            Remote = "https://github.com/FortAwesome/Font-Awesome.git",
+            Branch = "6.x",
+            SparseCheckout = "metadata/icons.json"
+        };
+
+        FontRepositoryInfo ionicFontRepositoryInfo = new FontRepositoryInfo()
+        {
+            WorkPath = Paths.IonicIconPath,
+            Remote = "https://github.com/ionic-team/ionicons.git",
+            Branch = "main",
+            SparseCheckout = "src/svg/"
+        };
+
+        FontRepositoryInfo materialFontRepositoryInfo = new FontRepositoryInfo()
+        {
+            WorkPath = Paths.MaterialIconPath,
+            Remote = "https://github.com/google/material-design-icons.git",
+            Branch = "master",
+            SparseCheckout = "symbols/android/*/materialsymbolssharp/*_24px.xml"
+        };
+
+        FontRepositoryInfo materialCommunityFontRepositoryInfo = new FontRepositoryInfo()
+        {
+            WorkPath = Paths.MaterialCommunityIconPath,
+            Remote = "https://github.com/Templarian/MaterialDesign.git",
+            Branch = "master",
+            SparseCheckout = "svg/"
+        };
+
+        FontRepositoryInfo simpleFontRepositoryInfo = new FontRepositoryInfo()
+        {
+            WorkPath = Paths.SimpleIconPath,
+            Remote = "https://github.com/simple-icons/simple-icons.git",
+            Branch = "develop",
+            SparseCheckout = "icons/"
+        };
+
+        FontRepositoryInfo tablerFontRepositoryInfo = new FontRepositoryInfo()
+        {
+            WorkPath = Paths.TablerIconPath,
+            Remote = "https://github.com/tabler/tabler-icons.git",
+            Branch = "main",
+            SparseCheckout = "icons/"
+        };
 
         Console.WriteLine("Icons initializing...");
-        await InitIcons();
 
-        Console.WriteLine();
+        FeatherGenerator featherGenerator = new FeatherGenerator(featherFontRepositoryInfo);
+        await featherGenerator.InitIcons();
+
+        FontAwesomeGenerator fontAwesomeGenerator = new FontAwesomeGenerator(fontAwesomeFontRepositoryInfo);
+        await fontAwesomeGenerator.InitIcons();
+
+        IonicGenerator ionicGenerator = new IonicGenerator(ionicFontRepositoryInfo);
+        await ionicGenerator.InitIcons();
+
+        MaterialGenerator materialGenerator = new MaterialGenerator(materialFontRepositoryInfo);
+        await materialGenerator.InitIcons();
+
+        MaterialCommunityGenerator materialCommunityGenerator = new MaterialCommunityGenerator(materialCommunityFontRepositoryInfo);
+        await materialCommunityGenerator.InitIcons();
+
+        SimpleGenerator simpleGenerator = new SimpleGenerator(simpleFontRepositoryInfo);
+        await simpleGenerator.InitIcons();
+
+        TablerGenerator tablerGenerator = new TablerGenerator(tablerFontRepositoryInfo);
+        await tablerGenerator.InitIcons();
+
+        /*Console.WriteLine();
         Console.WriteLine("Icons updating...");
 
-        await UpdateIcons();
+        await featherGenerator.UpdateIcons();
+        await fontAwesomeGenerator.UpdateIcons();
+        await ionicGenerator.UpdateIcons();
+        await materialGenerator.UpdateIcons();
+        await materialCommunityGenerator.UpdateIcons();
+        await simpleGenerator.UpdateIcons();
+        await tablerGenerator.UpdateIcons();*/
 
         Console.WriteLine();
         Console.WriteLine("Generator running...");
 
-        RunIconsGenerator();
+        featherGenerator.Generate();
+        fontAwesomeGenerator.Generate();
+        ionicGenerator.Generate();
+        materialGenerator.Generate();
+        materialCommunityGenerator.Generate();
+        simpleGenerator.Generate();
+        tablerGenerator.Generate();
 
         Console.WriteLine();
         Console.WriteLine("Packs building...");
 
-        await BuildIconPacks(apiKey);
+        await new NugetService(_apiKey).BuildIconPacks();
 
         Console.WriteLine();
         Console.WriteLine("Done!");
-    }
-
-    private static async Task InitIcons()
-    {
-        await InitIcons(
-            Paths.FeatherIconPath,
-            "https://github.com/feathericons/feather.git",
-            "main",
-            "icons/"
-        );
-        await InitIcons(
-            Paths.FontAwesomeIconPath,
-            "https://github.com/FortAwesome/Font-Awesome.git",
-            "6.x",
-            "metadata/icons.json"
-        );
-        await InitIcons(
-            Paths.IonicIconPath,
-            "https://github.com/ionic-team/ionicons.git",
-            "main",
-            "src/svg/"
-        );
-        await InitIcons(
-            Paths.MaterialIconPath,
-            "https://github.com/google/material-design-icons.git",
-            "master",
-            "symbols/android/*/materialsymbolssharp/*_24px.xml"
-        );
-        await InitIcons(
-            Paths.MaterialCommunityIconPath,
-            "https://github.com/Templarian/MaterialDesign.git",
-            "master",
-            "svg/"
-        );
-        await InitIcons(
-            Paths.SimpleIconPath,
-            "https://github.com/simple-icons/simple-icons.git",
-            "develop",
-            "icons/"
-        );
-        await InitIcons(
-            Paths.TablerIconPath,
-            "https://github.com/tabler/tabler-icons.git",
-            "master",
-            "icons/"
-        );
-    }
-
-    private static async Task InitIcons(
-        string workPath,
-        string remote,
-        string branch,
-        string sparseCheckout
-    )
-    {
-        if (!Directory.Exists(workPath))
-        {
-            Directory.CreateDirectory(workPath);
-        }
-        if (!Directory.Exists(Path.Combine(workPath, ".git")))
-        {
-            await Cli.Wrap("git")
-                .WithWorkingDirectory(workPath)
-                .WithArguments("init")
-                .ExecuteBufferedAsync();
-            await Cli.Wrap("git")
-                .WithWorkingDirectory(workPath)
-                .WithArguments($"remote add remote {remote}")
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-                .ExecuteBufferedAsync();
-            await Cli.Wrap("git")
-                .WithWorkingDirectory(workPath)
-                .WithArguments("config core.sparsecheckout true")
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-                .ExecuteBufferedAsync();
-            File.WriteAllText(Path.Combine(workPath, ".git/info/sparse-checkout"), sparseCheckout);
-            await Cli.Wrap("git")
-                .WithWorkingDirectory(workPath)
-                .WithArguments($"pull remote {branch}:master")
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-                .ExecuteBufferedAsync();
-        }
-    }
-
-    private static async Task UpdateIcons()
-    {
-        await UpdateIcons(Paths.FeatherIconPath, "main", "icons/");
-        await UpdateIcons(Paths.FontAwesomeIconPath, "6.x", "metadata/icons.json");
-        await UpdateIcons(Paths.IonicIconPath, "main", "src/svg/");
-        await UpdateIcons(
-            Paths.MaterialIconPath,
-            "master",
-            "symbols/android/*/materialsymbolssharp/*_24px.xml"
-        );
-        await UpdateIcons(Paths.MaterialCommunityIconPath, "master", "svg/");
-        await UpdateIcons(Paths.SimpleIconPath, "develop", "icons/");
-        await UpdateIcons(Paths.TablerIconPath, "master", "icons/");
-    }
-
-    private static async Task UpdateIcons(string workPath, string branch, string sparseCheckout)
-    {
-        if (Directory.Exists(Path.Combine(workPath, ".git")))
-        {
-            await Cli.Wrap("git")
-                .WithWorkingDirectory(workPath)
-                .WithArguments("config core.sparsecheckout true")
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-                .ExecuteBufferedAsync();
-            File.WriteAllText(Path.Combine(workPath, ".git/info/sparse-checkout"), sparseCheckout);
-            await Cli.Wrap("git")
-                .WithWorkingDirectory(workPath)
-                .WithArguments($"pull remote {branch}:master")
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-                .ExecuteBufferedAsync();
-        }
-    }
-
-    private static void RunIconsGenerator()
-    {
-        FeatherGenerator.Run();
-        FontAwesomeGenerator.Run();
-        IonicGenerator.Run();
-        MaterialGenerator.Run();
-        MaterialCommunityGenerator.Run();
-        SimpleGenerator.Run();
-        TablerGenerator.Run();
-    }
-
-    private static async Task BuildIconPacks(string? apiKey)
-    {
-        var oldNupkgs = Directory.EnumerateFiles(
-            Paths.RootPath,
-            "*.nupkg",
-            SearchOption.AllDirectories
-        );
-        foreach (var nupkg in oldNupkgs)
-        {
-            File.Delete(nupkg);
-        }
-
-        await Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Paths.RootPath)
-            .WithArguments("pack ./IconPacks.Feather -c release")
-            .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-            .ExecuteBufferedAsync();
-        await Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Paths.RootPath)
-            .WithArguments("pack ./IconPacks.FontAwesome -c release")
-            .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-            .ExecuteBufferedAsync();
-        await Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Paths.RootPath)
-            .WithArguments("pack ./IconPacks.Ionic -c release")
-            .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-            .ExecuteBufferedAsync();
-        await Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Paths.RootPath)
-            .WithArguments("pack ./IconPacks.Material -c release")
-            .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-            .ExecuteBufferedAsync();
-        await Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Paths.RootPath)
-            .WithArguments("pack ./IconPacks.MaterialCommunity -c release")
-            .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-            .ExecuteBufferedAsync();
-        await Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Paths.RootPath)
-            .WithArguments("pack ./IconPacks.Simple -c release")
-            .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-            .ExecuteBufferedAsync();
-        await Cli.Wrap("dotnet")
-            .WithWorkingDirectory(Paths.RootPath)
-            .WithArguments("pack ./IconPacks.Tabler -c release")
-            .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-            .ExecuteBufferedAsync();
-
-        if (string.IsNullOrEmpty(apiKey))
-        {
-            Console.WriteLine("Please input you nuget api-key...");
-            apiKey = Console.ReadLine();
-        }
-
-        if (string.IsNullOrEmpty(apiKey))
-        {
-            Console.WriteLine("Error: Nuget api-key is empty!");
-            return;
-        }
-
-        var newNupkgs = Directory.EnumerateFiles(
-            Paths.RootPath,
-            "*.nupkg",
-            SearchOption.AllDirectories
-        );
-
-        foreach (var nupkg in newNupkgs)
-        {
-            await Cli.Wrap("dotnet")
-                .WithStandardOutputPipe(PipeTarget.ToDelegate(Console.WriteLine, Encoding.UTF8))
-                .WithArguments(
-                    $"nuget push {nupkg} --api-key {apiKey} --source https://api.nuget.org/v3/index.json"
-                )
-                .ExecuteBufferedAsync();
-        }
     }
 }

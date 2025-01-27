@@ -1,5 +1,6 @@
-﻿
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
+
+namespace IconPacksGenerator.IconGenerators;
 
 public class FontAwesomeIcon
 {
