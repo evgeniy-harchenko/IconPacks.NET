@@ -2,3 +2,6 @@
 bin/
 obj/
 3rdparty/
+.idea/
+*/IconPacks.*/*.cs
+*.sln.DotSettings.user
