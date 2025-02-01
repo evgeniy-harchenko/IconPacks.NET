@@ -97,10 +97,6 @@ internal abstract class IconGeneratorBase
     private void ProcessSvgFile(string filePath)
     {
         var id = Path.GetFileNameWithoutExtension(filePath);
-        var data = Util.GetSvgData(filePath);
-        if (!string.IsNullOrEmpty(data))
-        {
-            IconKinds.Add(id.GetCamelId(), data);
-        }
+        IconKinds.Add(id.GetCamelId(), SvgPathConverter.ConvertSvgToSinglePath(filePath).ToSvgPathData());
     }
 }
