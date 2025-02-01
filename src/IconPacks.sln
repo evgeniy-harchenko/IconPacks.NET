@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IconPacks.Simple", "IconPac
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IconPacks.Tabler", "IconPacks.Tabler\IconPacks.Tabler.csproj", "{B54F22BA-9521-4CB5-9FEC-DCC55B86078F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IconPacksGenerator.Tests", "IconPacksGenerator.Tests\IconPacksGenerator.Tests.csproj", "{BD4EEC01-60C4-4D65-9041-05260E671B78}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{B54F22BA-9521-4CB5-9FEC-DCC55B86078F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B54F22BA-9521-4CB5-9FEC-DCC55B86078F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B54F22BA-9521-4CB5-9FEC-DCC55B86078F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD4EEC01-60C4-4D65-9041-05260E671B78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD4EEC01-60C4-4D65-9041-05260E671B78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD4EEC01-60C4-4D65-9041-05260E671B78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD4EEC01-60C4-4D65-9041-05260E671B78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
