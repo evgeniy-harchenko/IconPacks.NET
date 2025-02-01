@@ -1,3 +1,5 @@
+using IconPacksGenerator.Services;
+
 namespace IconPacksGenerator.IconGenerators;
 
 internal class MaterialGenerator(FontRepositoryInfo fontRepositoryInfo) : IconGeneratorBase(fontRepositoryInfo)
@@ -19,5 +21,7 @@ internal class MaterialGenerator(FontRepositoryInfo fontRepositoryInfo) : IconGe
         }
 
         Util.OutputIconKindFile(IconKinds, Type);
+        
+        IconPdfGenerator.GeneratePdf(Type, IconKinds);
     }
 }

@@ -90,6 +90,8 @@ internal abstract class IconGeneratorBase
         }
 
         Util.OutputIconKindFile(IconKinds, Type);
+
+        IconPdfGenerator.GeneratePdf(Type, IconKinds);
     }
 
     private void ProcessSvgFile(string filePath)

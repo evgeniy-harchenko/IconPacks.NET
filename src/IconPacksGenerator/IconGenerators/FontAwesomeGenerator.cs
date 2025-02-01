@@ -1,4 +1,5 @@
 using System.Text.Json;
+using IconPacksGenerator.Services;
 
 namespace IconPacksGenerator.IconGenerators;
 
@@ -28,5 +29,7 @@ internal class FontAwesomeGenerator(FontRepositoryInfo fontRepositoryInfo) : Ico
         }
 
         Util.OutputIconKindFile(IconKinds, Type);
+        
+        IconPdfGenerator.GeneratePdf(Type, IconKinds);
     }
 }

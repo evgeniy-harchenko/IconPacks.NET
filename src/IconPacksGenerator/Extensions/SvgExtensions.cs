@@ -47,7 +47,6 @@ internal static class SvgExtensions
         {
             return $"M{line.StartX},{line.StartY} V {line.EndY}";
         }
-
     }
 
     internal static string ParseRectangle(this SvgElement element)
